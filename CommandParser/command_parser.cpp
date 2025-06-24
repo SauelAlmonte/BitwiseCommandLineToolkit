@@ -10,7 +10,6 @@ using namespace std;
 void process_command(const string& userInput) {
     istringstream input_stream(userInput);
 
-    // For keyword-style commands like bin, set, clear, etc.
     string command;
     input_stream >> command;
 
@@ -20,7 +19,7 @@ void process_command(const string& userInput) {
     } else if (command == "exit") {
         exit(0);
     } else if (command == "bin") {
-        int value;
+        unsigned int value;
         if (input_stream >> value) {
             cout << toBinaryString(value) << endl;
         } else {
@@ -28,99 +27,105 @@ void process_command(const string& userInput) {
         }
         return;
     } else if (command == "set") {
-        int value, position;
+        unsigned int value;
+        int position;
         if (input_stream >> value >> position) {
-            cout << set_bit(value, position) << endl;
+            unsigned int result = set_bit(value, position);
+            cout << "Decimal: " << result << endl;
+            cout << "Binary : " << toBinaryString(result) << endl;
         } else {
             cout << "Error: set requires two integers. Example: set 4 1\n";
         }
         return;
     } else if (command == "clear") {
-        int value, position;
+        unsigned int value;
+        int position;
         if (input_stream >> value >> position) {
-            cout << clear_bit(value, position) << endl;
+            unsigned int result = clear_bit(value, position);
+            cout << "Decimal: " << result << endl;
+            cout << "Binary : " << toBinaryString(result) << endl;
         } else {
             cout << "Error: clear requires two integers. Example: clear 5 0\n";
         }
         return;
     } else if (command == "toggle") {
-        int value, position;
+        unsigned int value;
+        int position;
         if (input_stream >> value >> position) {
-            cout << toggle_bit(value, position) << endl;
+            unsigned int result = toggle_bit(value, position);
+            cout << "Decimal: " << result << endl;
+            cout << "Binary : " << toBinaryString(result) << endl;
         } else {
             cout << "Error: toggle requires two integers. Example: toggle 9 3\n";
         }
         return;
     } else if (command == "check") {
-        int value, position;
+        unsigned int value;
+        int position;
         if (input_stream >> value >> position) {
-            if (is_bit_set(value, position)) {
-                cout << "Set" << endl;
-            } else {
-                cout << "Not Set" << endl;
-            }
+            cout << (is_bit_set(value, position) ? "Set" : "Not Set") << endl;
         } else {
             cout << "Error: check requires two integers. Example: check 5 2\n";
         }
         return;
     }
 
-    // Rewind stream to parse expressions like 5 & 7, ~9, 8 << 2
+    // Reset and prepare to parse expression-style input
     input_stream.clear();
     input_stream.str(userInput);
 
-    // Handle unary NOT: ~a
-    char ch;
-    input_stream >> ch;
-    if (ch == '~') {
-        int value;
+    char firstChar;
+    input_stream >> firstChar;
+
+    if (firstChar == '~') {
+        unsigned int value;
         if (input_stream >> value) {
-            cout << (~value) << endl;
+            unsigned int result = ~value & 0xFF; // limit to 8-bit
+            cout << "Decimal: " << result << endl;
+            cout << "Binary : " << toBinaryString(result) << endl;
         } else {
             cout << "Error: '~' requires one integer. Example: ~5\n";
         }
         return;
     } else {
-        // Put the character back since it wasn't '~'
-        input_stream.putback(ch);
+        input_stream.putback(firstChar);
     }
 
-    // Handle binary expressions: a & b, a | b, a ^ b, a << b, a >> b
-    int a, b;
+    unsigned int a;
     char op;
 
     if (input_stream >> a >> op) {
+        unsigned int b;
         if (op == '<' || op == '>') {
-            char next;
-            if (input_stream >> next && next == op) {
+            char op2;
+            if (input_stream >> op2 && op2 == op) {
                 if (input_stream >> b) {
-                    if (op == '<') {
-                        cout << (a << b) << endl;
-                    } else {
-                        cout << (a >> b) << endl;
-                    }
+                    unsigned int result = (op == '<') ? (a << b) & 0xFF : (a >> b) & 0xFF;
+                    cout << "Decimal: " << result << endl;
+                    cout << "Binary : " << toBinaryString(result) << endl;
                 } else {
-                    cout << "Error: shift operation requires two integers. Example: 4 << 2\n";
+                    cout << "Error: shift operation requires two integers. Example: 8 << 2\n";
                 }
             } else {
-                cout << "Error: expected '<<' or '>>'. Example: 8 << 2\n";
+                cout << "Error: expected '<<' or '>>'. Example: 4 << 1\n";
             }
         } else if (op == '&' || op == '|' || op == '^') {
             if (input_stream >> b) {
-                if (op == '&') {
-                    cout << (a & b) << endl;
-                } else if (op == '|') {
-                    cout << (a | b) << endl;
-                } else if (op == '^') {
-                    cout << (a ^ b) << endl;
-                }
+                unsigned int result = 0;
+                if (op == '&') result = a & b;
+                else if (op == '|') result = a | b;
+                else if (op == '^') result = a ^ b;
+                result = result & 0xFF;
+
+                cout << "Decimal: " << result << endl;
+                cout << "Binary : " << toBinaryString(result) << endl;
             } else {
-                cout << "Error: bitwise operator requires two integers. Example: 5 & 7\n";
+                cout << "Error: bitwise operator requires two integers. Example: 5 & 3\n";
             }
         } else {
-            cout << "Error: unrecognized operator '" << op << "'\n";
+            cout << "Error: unrecognized operator '" << op << "'. Supported: &, |, ^, <<, >>, ~\n";
         }
     } else {
-        cout << "Invalid input. Type 'help' to see valid commands and examples.\n";
+        cout << "Invalid input. Type 'help' to see valid commands and syntax.\n";
     }
 }

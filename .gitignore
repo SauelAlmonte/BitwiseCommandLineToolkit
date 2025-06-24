@@ -1,11 +1,25 @@
-# Prerequisites
-*.d
+# OS-specific files
+.DS_Store
+
+# IDE: CLion / JetBrains
+.idea/
+cmake-build-*/
+*.iml
+
+# CMake build artifacts
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+CTestTestfile.cmake
+build/
+Testing/
 
 # Compiled Object files
-*.slo
-*.lo
 *.o
 *.obj
+*.lo
+*.slo
 
 # Precompiled Headers
 *.gch
@@ -16,17 +30,17 @@
 *.dylib
 *.dll
 
-# Fortran module files
-*.mod
-*.smod
-
 # Compiled Static libraries
-*.lai
-*.la
 *.a
 *.lib
+*.lai
+*.la
 
 # Executables
 *.exe
 *.out
 *.app
+
+# Unit test logs / core dumps
+core.*
+*.log
